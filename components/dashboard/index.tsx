@@ -10,10 +10,13 @@ import { X } from "lucide-react";
 
 const DashboardCmp = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { friends, setRoomId } = useContext(DashboardContext);
+  const { friends, setRoomId, addFriend, removeFriend } =
+    useContext(DashboardContext);
   const [searchFriends, setSearchFriends] = useState<string>("");
   const [searchedFriends, setSearchedFriends] = useState<any[]>([]);
   const [isBeingSearched, setIsBeingSearched] = useState<boolean>(false);
+  const [isAddRemoveFriend, setIsAddRemoveFriend] = useState<boolean>(false);
+  const router = useNavigate();
   //get params
   const { id } = useParams();
   useEffect(() => {
@@ -217,11 +220,29 @@ const DashboardCmp = () => {
                       <SearchList
                         list={searchedFriends}
                         isLoading={isBeingSearched}
+                        addFriend={async (email) => {
+                          setIsAddRemoveFriend(true);
+                          await addFriend(email);
+                          setIsAddRemoveFriend(false);
+                          setSearchFriends("");
+                          setSearchedFriends([]);
+                          router("/dashboard");
+                        }}
+                        removeFriend={async (email) => {
+                          setIsAddRemoveFriend(true);
+                          removeFriend(email);
+                          setIsAddRemoveFriend(false);
+                          setSearchFriends("");
+                          setSearchedFriends([]);
+                          router("/dashboard");
+                        }}
+                        isAddRemoveFriend={isAddRemoveFriend}
                       />
                     )
                   }
                   <div className="flex-1 h-full overflow-none px-2">
-                    {friends.length !== 0 &&
+                    {friends &&
+                      friends.length !== 0 &&
                       friends.map((friend: any) => {
                         return (
                           <Link
@@ -257,14 +278,17 @@ const DashboardCmp = () => {
                               </div>
                               <div>
                                 <small className="text-gray-400">
-                                  {friend.lastMessage.message}
+                                  {friend.lastMessage?.message || ""}
                                 </small>
                               </div>
                             </div>
                             <div className="flex-2 text-right">
                               <div>
                                 <small className="text-gray-500">
-                                  {formatDate(friend.lastMessage.time)}
+                                  {friend.lastMessage === null ||
+                                  friend.lastMessage === undefined
+                                    ? ""
+                                    : formatDate(friend.lastMessage?.time)}
                                 </small>
                               </div>
                               <div>

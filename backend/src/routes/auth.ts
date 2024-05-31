@@ -7,7 +7,7 @@ import { Request, Response } from "express";
 
 declare module 'express-session' {
         interface SessionData {
-                user: { email: string, name: string};
+                user: { email: string, name: string };
                 token: string;
         }
 }
@@ -65,11 +65,11 @@ router.post("/login", async (req: Request, res: Response<any>) => {
 
                 req.session.user = { email: user.email, name: user.name };
                 req.session.token = token;
-                console.log("sessionid" ,req.session.id);
-                req.session.save(()=>{console.log('session stored')});
+                console.log("sessionid", req.session.id);
+                req.session.save(() => { console.log('session stored') });
                 console.log(req.session.id);
 
-                return res.status(200).json({ success: true, message: "User logged in successfully!", status: 200, user: { email: user.email, name: user.name }});
+                return res.status(200).json({ success: true, message: "User logged in successfully!", status: 200, user: { email: user.email, name: user.name } });
 
         } catch (err) {
                 console.log(err);
@@ -129,21 +129,21 @@ router.post("/register", async (req, res) => {
                         updatedAt: new Date()
                 });
                 // check if the user is inserted
-                if (result.acknowledged){
+                if (result.acknowledged) {
                         console.log(result);
                         //generate jwt token
                         const token = jwt.sign({
                                 email: email,
                                 name: name
                         }, process.env.NODE_ENV_JWT_SECRET, { expiresIn: "7d" });
-        
+
                         req.session.user = { email, name };
                         req.session.token = token;
-                        req.session.save(()=>{
+                        req.session.save(() => {
                                 console.log('session stored')
                         })
-        
-                        return res.status(200).json({ success: true, message: "User logged in successfully!", status: 200, user :{email , name} });
+
+                        return res.status(200).json({ success: true, message: "User logged in successfully!", status: 200, user: { email, name } });
                 }
                 else
                         return res.status(500).json({ success: false, message: "Internal server error!", status: 500 });

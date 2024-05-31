@@ -1,87 +1,152 @@
 import { createContext, useEffect, useRef, useState } from "react";
-import { Chat, Friend }from "../../types/dashboard";
+import { Chat, Friend } from "../../types/dashboard";
 
 interface dashboardContextProps {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 interface DashboardContext {
-    getFriends: () => Promise<{message: string, friends: Friend[]}>;
-    friends: Friend[];
-    setFriends: React.Dispatch<React.SetStateAction<Friend[]>>;
-    currentChatMessages: Chat[] | [];
-    setCurrentChatMessages: React.Dispatch<React.SetStateAction<Chat[] | []>>;
-    roomId: string;
-    setRoomId: React.Dispatch<React.SetStateAction<string>>;
-    chatAreaRef?: React.MutableRefObject<HTMLDivElement | null>;
+  getFriends: () => Promise<{ message: string; friends: Friend[] }>;
+  friends: Friend[];
+  setFriends: React.Dispatch<React.SetStateAction<Friend[]>>;
+  currentChatMessages: Chat[] | [];
+  setCurrentChatMessages: React.Dispatch<React.SetStateAction<Chat[] | []>>;
+  roomId: string;
+  setRoomId: React.Dispatch<React.SetStateAction<string>>;
+  chatAreaRef?: React.MutableRefObject<HTMLDivElement | null>;
+  addFriend: (friendEmail: string) => Promise<{ message: string }>;
+  removeFriend: (friendEmail: string) => Promise<{ message: string }>;
 }
 
-export const DashboardContext = createContext<DashboardContext>({} as DashboardContext) as React.Context<DashboardContext>;
+export const DashboardContext = createContext<DashboardContext>(
+  {} as DashboardContext
+) as React.Context<DashboardContext>;
 
 export const DashboardProvider = ({ children }: dashboardContextProps) => {
-    const [friends, setFriends] = useState<Friend[]>([]);
-    const [currentChatMessages, setCurrentChatMessages] = useState< Chat[] |[]>([]);
-    const [roomId, setRoomId] = useState<string>("");
-    const chatAreaRef = useRef<HTMLDivElement | null>(null);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [currentChatMessages, setCurrentChatMessages] = useState<Chat[] | []>(
+    []
+  );
+  const [roomId, setRoomId] = useState<string>("");
+  const chatAreaRef = useRef<HTMLDivElement | null>(null);
 
-    const getFriends = async () => {
-        // Send the data to the server
-        const res = await fetch(
-            `${import.meta.env.VITE_APP_API_URL}/api/chat/get-friends`,
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-            }
-        );
-        const data = await res.json();
+  const getFriends = async () => {
+    // Send the data to the server
+    const res = await fetch(
+      `${import.meta.env.VITE_APP_API_URL}/api/chat/get-friends`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    );
+    const data = await res.json();
 
-        // set the user in the context
-        if (res.status === 200) {
-            setFriends(data.friends as Friend[]);
-        }
-        // return the response
-        return data;
-    };
+    // set the user in the context
+    if (res.status === 200) {
+      setFriends(data.friends as Friend[]);
+    }
+    // return the response
+    return data;
+  };
 
-    const getCurrentChatMessages = async (roomId: string,number : number) => {
-        // Send the data to the server
-        const res = await fetch(
-            `${import.meta.env.VITE_APP_API_URL}/api/chat/get-messages`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({ roomId, number }),
-            }
-        );
-        const data = await res.json();
+  const getCurrentChatMessages = async (roomId: string, number: number) => {
+    // Send the data to the server
+    const res = await fetch(
+      `${import.meta.env.VITE_APP_API_URL}/api/chat/get-messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ roomId, number }),
+      }
+    );
+    const data = await res.json();
 
-        // set the user in the context
-        if (res.status === 200) {
-            setCurrentChatMessages(data.messages as Chat[]);
-            chatAreaRef.current?.scrollTo(0, chatAreaRef.current?.scrollHeight);
-        }
-        // return the response
-        return data;
-    };
+    // set the user in the context
+    if (res.status === 200) {
+      setCurrentChatMessages(data.messages as Chat[]);
+      chatAreaRef.current?.scrollTo(0, chatAreaRef.current?.scrollHeight);
+    }
+    // return the response
+    return data;
+  };
 
-    useEffect(() => {
-        getFriends();
-    }, []);
+  const addFriend = async (friendEmail: string) => {
+    // Send the data to the server
+    const res = await fetch(
+      `${import.meta.env.VITE_APP_API_URL}/api/friends/add-friend`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ friendEmail }),
+      }
+    );
+    const data = await res.json();
 
-    useEffect(() => {
-        if (roomId !== "") {
-            getCurrentChatMessages(roomId, 15);
-        }
-    }, [roomId]);
+    // set the user in the context
+    if (res.status === 200) {
+      getFriends();
+    }
+    // return the response
+    return data;
+  };
+
+  const removeFriend = async (friendEmail: string) => {
+    // Send the data to the server
+    const res = await fetch(
+      `${import.meta.env.VITE_APP_API_URL}/api/friends/remove-friend`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ friendEmail }),
+      }
+    );
+    const data = await res.json();
+
+    // set the user in the context
+    if (res.status === 200) {
+      getFriends();
+    }
+    // return the response
+    return data;
+  };
+
+  useEffect(() => {
+    getFriends();
+  }, []);
+
+  useEffect(() => {
+    if (roomId !== "") {
+      getCurrentChatMessages(roomId, 15);
+    }
+  }, [roomId]);
 
   return (
-    <DashboardContext.Provider value={{getFriends,friends,setFriends, currentChatMessages, setCurrentChatMessages, roomId, setRoomId, chatAreaRef}}>
+    <DashboardContext.Provider
+      value={{
+        getFriends,
+        friends,
+        setFriends,
+        currentChatMessages,
+        setCurrentChatMessages,
+        roomId,
+        setRoomId,
+        chatAreaRef,
+        addFriend,
+        removeFriend,
+      }}
+    >
       {children}
     </DashboardContext.Provider>
   );
