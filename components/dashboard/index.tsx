@@ -6,12 +6,13 @@ import "../../src/index.css";
 import ChatArea from "./ChatArea";
 import { DashboardContext } from "../../src/context/dashBoardContext";
 import SearchList from "./SearchList";
-import { X } from "lucide-react";
+import { LogOut, Menu, MessageCircleMore, X } from "lucide-react";
 
 const DashboardCmp = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { friends, setRoomId, addFriend, removeFriend } =
     useContext(DashboardContext);
+  const { logout } = useContext(AuthContext);
   const [searchFriends, setSearchFriends] = useState<string>("");
   const [searchedFriends, setSearchedFriends] = useState<any[]>([]);
   const [isBeingSearched, setIsBeingSearched] = useState<boolean>(false);
@@ -99,11 +100,43 @@ const DashboardCmp = () => {
     }
   }, [friends]);
 
+  const signOut = async () => {
+    console.log("signing out");
+    const res = await logout();
+    if (res.status === 200) {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="w-full h-screen bg-gray-900 text-gray-300">
       <div className="flex h-full">
-        <div className="flex-1 bg-gray-800 w-full h-full overflow-y-hidden">
-          <div className="main-body container m-auto w-11/12 h-full flex flex-col">
+        <div className="flex flex-row bg-gray-800 w-full h-full overflow-y-hidden">
+          <div className="flex flex-col justify-between mx-5">
+            <div className="flex flex-col mt-12">
+              <div className=" flex flex-col gap-5">
+                <div className="flex justify-center group z-[999]">
+                  <div className="group-hover:bg-gradient-to-tl group-hover:from-[#ffffff24] group-hover:to-gray-800 cursor-pointer p-1 border border-gray-800 group-hover:border-[#ffffff71] rounded-md">
+                    <Menu size={25} className="" />
+                  </div>
+                </div>
+                <div className="flex justify-center mt-10">
+                  <div className="border-[#ffffff71] rounded-md cursor-pointer border p-1">
+                    <MessageCircleMore size={25} className="" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-center group">
+              <button
+                className="group-hover:bg-gradient-to-tl group-hover:from-[#ffffff24] group-hover:to-gray-800 cursor-pointer p-1 border border-gray-800 group-hover:border-[#ffffff71] rounded-md mb-16"
+                onClick={signOut}
+              >
+                <LogOut size={25} />
+              </button>
+            </div>
+          </div>
+          <div className="main-body container w-11/12 h-full flex flex-col">
             <div className="py-4 flex-2 flex flex-row">
               <div className="flex items-center">
                 <span
